@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movies_tmdb/model/movie.dart';
+import 'package:movies_tmdb/view/widgets/card_details.dart';
 import 'package:movies_tmdb/view/widgets/card_movie.dart';
 
 import '../../controllers/details_controller.dart';
@@ -17,8 +18,18 @@ class _DetailsPage extends State<DetailsPage> {
   bool loading = true;
 
   Movie? movie;
-  void getFilme() async {
-    movie = await controller.getFilme(widget.id);
+  List<Movie> relatedMovies = [];
+
+  void getRelatedMovies(genres, id) async {
+    relatedMovies = await controller.getRelatedMovies(genres, id);
+    setState(() {});
+  }
+
+  void getMovie() async {
+    movie = await controller.getMovie(widget.id);
+
+    getRelatedMovies(movie!.getGenres, movie!.getId);
+
     setState(() {
       loading = false;
     });
@@ -27,7 +38,7 @@ class _DetailsPage extends State<DetailsPage> {
   @override
   void initState() {
     super.initState();
-    getFilme();
+    getMovie();
   }
 
   @override
@@ -50,11 +61,8 @@ class _DetailsPage extends State<DetailsPage> {
                   flexibleSpace: FlexibleSpaceBar(
                     background: Image.network(
                       movie!.getBackdropUrl,
-                      errorBuilder: (BuildContext context, Object exception,
-                          StackTrace? stackTrace) {
-                        return const SizedBox(
-                            height: 200,
-                            child: Center(child: Text('Image not found...')));
+                      errorBuilder: (context, exception, stackTrace) {
+                        return Image.asset("imgs/transparent.png");
                       },
                       fit: BoxFit.fill,
                     ),
@@ -64,69 +72,49 @@ class _DetailsPage extends State<DetailsPage> {
                 SliverToBoxAdapter(
                   child: Column(
                     children: [
-                      Row(
-                        children: [
-                          SizedBox(
-                            height: 400,
-                            width: 200,
-                            child: CardMovie(
-                                title: movie!.getTitle,
-                                posterUrl: movie!.getPosterUrl,
-                                voteAverage: movie!.getVoteAverage,
-                                genres: movie!.getGenres),
-                          ),
-                          Center(child: Text(movie!.title.toString()))
-                        ],
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: CardDetails(movie: movie),
                       ),
                       Column(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              movie!.getTagline.toString(),
-                              style: const TextStyle(
-                                  letterSpacing: 2,
-                                  color: Colors.grey,
-                                  fontStyle: FontStyle.italic),
-                            ),
+                          const Text(
+                            "Related movies",
+                            style: TextStyle(fontSize: 20),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              movie!.getOverview.toString(),
-                              textAlign: TextAlign.justify,
-                              style: const TextStyle(
-                                  letterSpacing: 2,
-                                  color: Colors.grey,
-                                  fontStyle: FontStyle.italic),
-                            ),
-                          ),
-                          Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Released: ${movie!.getReleaseDate.year}",
-                                      textAlign: TextAlign.justify,
-                                      style: const TextStyle(
-                                          letterSpacing: 2,
-                                          color: Colors.grey,
-                                          fontStyle: FontStyle.italic),
-                                    ),
-                                  ])),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Column(
                               children: [
-                                Text(
-                                  "Runtime: ${movie!.getRuntime}",
-                                  textAlign: TextAlign.justify,
-                                  style: const TextStyle(
-                                      letterSpacing: 2,
-                                      color: Colors.grey,
-                                      fontStyle: FontStyle.italic),
+                                SizedBox(
+                                  height: 400,
+                                  child: GridView.count(
+                                    crossAxisCount: 3,
+                                    mainAxisSpacing: 24,
+                                    crossAxisSpacing: 24,
+                                    childAspectRatio: 0.5,
+                                    children: relatedMovies
+                                        .map((Movie movie) => GestureDetector(
+                                            onTap: () => {
+                                                  Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          DetailsPage(
+                                                              id: int.parse(movie
+                                                                  .id
+                                                                  .toString())),
+                                                    ),
+                                                  )
+                                                },
+                                            child: CardMovie(
+                                              title: movie.getTitle,
+                                              posterUrl: movie.getPosterUrl,
+                                              voteAverage: movie.getVoteAverage,
+                                              genres: movie.getGenres,
+                                              onlyTitle: true,
+                                            )))
+                                        .toList(),
+                                  ),
                                 ),
                               ],
                             ),

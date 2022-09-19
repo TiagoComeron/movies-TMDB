@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class SearchModal extends StatefulWidget {
-  const SearchModal({Key? key}) : super(key: key);
+  Function(List<dynamic> parameters) applyFilter;
+  SearchModal({Key? key, required this.applyFilter}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SearchModalPage();
@@ -19,27 +20,31 @@ class Genre {
 }
 
 class _SearchModalPage extends State<SearchModal> {
+  String searchText = "";
+
   RangeValues _currentRangeValues =
       RangeValues(1850, double.parse(DateTime.now().year.toString()));
 
-  static List<Genre> genres = [
-    Genre(id: 1, name: "Action"),
-    Genre(id: 2, name: "Animation"),
-    Genre(id: 3, name: "Comedy"),
-    Genre(id: 4, name: "Crime"),
-    Genre(id: 5, name: "Drama"),
-    Genre(id: 6, name: "Experimental"),
-    Genre(id: 7, name: "Fantasy"),
-    Genre(id: 8, name: "Historical"),
-    Genre(id: 9, name: "Horror"),
-    Genre(id: 10, name: "Romance"),
-    Genre(id: 11, name: "Science Fiction"),
-    Genre(id: 12, name: "Thriller"),
-    Genre(id: 13, name: "Western"),
-    Genre(id: 14, name: "Other"),
+  List<String> categoriesFilter = [];
+
+  static List<String> genres = [
+    "Action",
+    "Animation",
+    "Comedy",
+    "Crime",
+    "Drama",
+    "Experimental",
+    "Fantasy",
+    "Historical",
+    "Horror",
+    "Romance",
+    "Science Fiction",
+    "Thriller",
+    "Western",
+    "Other",
   ];
   final genresList =
-      genres.map((genre) => MultiSelectItem<Genre>(genre, genre.name)).toList();
+      genres.map((genre) => MultiSelectItem<String>(genre, genre)).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +74,23 @@ class _SearchModalPage extends State<SearchModal> {
                       Icons.search,
                       color: Color.fromRGBO(49, 45, 84, 1),
                     ),
-                    const Expanded(
+                    Expanded(
                       child: Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(8.0),
                         child: TextField(
-                          cursorColor: Color.fromRGBO(49, 45, 84, 1),
-                          decoration: InputDecoration.collapsed(hintText: ''),
+                          onChanged: (text) {
+                            setState(() {
+                              searchText = text;
+                            });
+                            widget.applyFilter([
+                              searchText,
+                              _currentRangeValues,
+                              categoriesFilter
+                            ]);
+                          },
+                          cursorColor: const Color.fromRGBO(49, 45, 84, 1),
+                          decoration:
+                              const InputDecoration.collapsed(hintText: ''),
                         ),
                       ),
                     )
@@ -92,7 +108,7 @@ class _SearchModalPage extends State<SearchModal> {
                   activeColor: const Color.fromRGBO(49, 45, 84, 1),
                   inactiveColor: const Color.fromARGB(118, 33, 30, 61),
                   values: _currentRangeValues,
-                  max: 2022,
+                  max: double.parse(DateTime.now().year.toString()),
                   min: 1850,
                   divisions: DateTime.now().year - 1850,
                   labels: RangeLabels(
@@ -103,6 +119,8 @@ class _SearchModalPage extends State<SearchModal> {
                     setState(() {
                       _currentRangeValues = values;
                     });
+                    widget.applyFilter(
+                        [searchText, _currentRangeValues, categoriesFilter]);
                   },
                 ),
               ],
@@ -115,6 +133,10 @@ class _SearchModalPage extends State<SearchModal> {
                 borderRadius: BorderRadius.all(Radius.circular(10)),
                 color: Color.fromRGBO(165, 165, 165, 1),
               ),
+              chipDisplay: MultiSelectChipDisplay(
+                chipColor: const Color.fromRGBO(49, 45, 84, 1),
+                textStyle: const TextStyle(color: Colors.white),
+              ),
               buttonText: const Text(
                 "Category",
                 style: TextStyle(
@@ -122,8 +144,17 @@ class _SearchModalPage extends State<SearchModal> {
                   fontSize: 16,
                 ),
               ),
-              onConfirm: (results) {
-                print(results);
+              onConfirm: (categories) {
+                if (categories.isEmpty) {
+                  categoriesFilter = [];
+                } else {
+                  for (var category in categories) {
+                    // genresFilter.add(value)
+                    categoriesFilter.add(category.toString());
+                  }
+                }
+                widget.applyFilter(
+                    [searchText, _currentRangeValues, categoriesFilter]);
               },
             ),
           ],

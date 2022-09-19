@@ -16,35 +16,77 @@ class HomePage extends StatefulWidget {
 class _HomeStatePage extends State<HomePage> {
   HomeController controller = HomeController();
   List<Movie> movies = [];
+  bool hasFilter = false;
 
-  void getFilmes() async {
-    movies = await controller.getFilmes();
+  void getMovies() async {
+    movies = await controller.getMovies();
+    setState(() {});
+  }
+
+  applyFilter(List<dynamic> parameters) {
+    setState(() {
+      hasFilter = true;
+    });
+    movies = controller.movieFilters(parameters);
     setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
-    getFilmes();
+    getMovies();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color.fromRGBO(33, 30, 61, 1),
       floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet<void>(
-            context: context,
-            backgroundColor: Colors.transparent,
-            builder: (BuildContext context) {
-              return const SearchModal();
-            },
-          );
-        },
-        backgroundColor: const Color.fromRGBO(74, 74, 74, 0.88),
-        child: const Icon(Icons.search),
+      floatingActionButton: Container(
+        margin: const EdgeInsets.only(top: 10),
+        child: Row(
+          children: [
+            FloatingActionButton(
+              onPressed: () {
+                showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (BuildContext context) {
+                      return SingleChildScrollView(
+                          child: Container(
+                        padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom),
+                        child: SearchModal(applyFilter: applyFilter),
+                      ));
+                    });
+              },
+              backgroundColor: const Color.fromRGBO(74, 74, 74, 0.88),
+              child: const Icon(Icons.search),
+            ),
+            !hasFilter
+                ? const SizedBox()
+                : Container(
+                    margin: const EdgeInsets.only(left: 10),
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        applyFilter([
+                          "",
+                          RangeValues(1850,
+                              double.parse(DateTime.now().year.toString())),
+                          []
+                        ]);
+                        setState(() {
+                          hasFilter = !hasFilter;
+                        });
+                      },
+                      backgroundColor: const Color.fromRGBO(74, 74, 74, 0.88),
+                      child: const Icon(Icons.filter_alt_off),
+                    ),
+                  ),
+          ],
+        ),
       ),
       body: Padding(
           padding:
@@ -69,6 +111,7 @@ class _HomeStatePage extends State<HomePage> {
                       posterUrl: movie.getPosterUrl,
                       voteAverage: movie.getVoteAverage,
                       genres: movie.getGenres,
+                      onlyTitle: false,
                     )))
                 .toList(),
           )),
