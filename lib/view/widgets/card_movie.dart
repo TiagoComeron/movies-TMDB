@@ -1,20 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+
+import '../../model/movie.dart';
 
 class CardMovie extends StatelessWidget {
-  final String title;
-  final String posterUrl;
-  final double voteAverage;
-  final List<String> genres;
+  final Movie movie;
   final bool onlyTitle;
 
-  const CardMovie(
-      {Key? key,
-      required this.title,
-      required this.posterUrl,
-      required this.voteAverage,
-      required this.genres,
-      required this.onlyTitle})
+  const CardMovie({Key? key, required this.movie, required this.onlyTitle})
       : super(key: key);
 
   @override
@@ -32,25 +24,13 @@ class CardMovie extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.all(Radius.circular(9)),
-                  // child: CachedNetworkImage(
-                  //   imageUrl: posterUrl,
-                  //   placeholder: (context, url) =>
-                  //       const CircularProgressIndicator(),
-                  //   errorWidget: (context, url, error) => const Icon(Icons.error),
-                  // ),
                   child: Image.network(
-                    posterUrl,
+                    movie.getPosterUrl,
                     errorBuilder: (context, exception, stackTrace) {
-                      return const Center(child: Text("No image avaliable..."));
+                      // return const Center(child: Text("No image avaliable..."));
+                      return const Image(image: AssetImage('poster_404.png'));
                     },
                   ),
-                  // child: FadeInImage.assetNetwork(
-                  //   fit: BoxFit.fill,
-                  //   placeholder: 'assets/imgs/errorImg.png', //kTransparentImage,
-                  //   image: posterUrl,
-                  //   imageErrorBuilder: (context, url, error) =>
-                  //       SizedBox(width: 200, child: new Icon(Icons.error)),
-                  // ),
                 ),
               ),
               Padding(
@@ -64,7 +44,7 @@ class CardMovie extends StatelessWidget {
                               child: SizedBox(
                             height: 35,
                             child: Text(
-                              title,
+                              movie.getTitle,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -78,7 +58,7 @@ class CardMovie extends StatelessWidget {
                                 height: 30,
                                 child: ListView.builder(
                                   scrollDirection: Axis.horizontal,
-                                  itemCount: genres.length,
+                                  itemCount: movie.getGenres.length,
                                   itemBuilder:
                                       (BuildContext context, int index) => Card(
                                     elevation: 2,
@@ -90,7 +70,7 @@ class CardMovie extends StatelessWidget {
                                       padding: const EdgeInsets.only(
                                           left: 8, right: 8, top: 3, bottom: 3),
                                       child: Text(
-                                        genres[index],
+                                        movie.getGenres[index],
                                         style: const TextStyle(fontSize: 13),
                                       ),
                                     ),
@@ -107,7 +87,7 @@ class CardMovie extends StatelessWidget {
                                   padding: const EdgeInsets.only(
                                       left: 5, right: 5, top: 3, bottom: 2),
                                   child: Text(
-                                    voteAverage.toString(),
+                                    movie.getVoteAverage.toString(),
                                     style: const TextStyle(fontSize: 13),
                                   ),
                                 ),

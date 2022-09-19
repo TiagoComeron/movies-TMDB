@@ -33,8 +33,7 @@ class _CardDetailsState extends State<CardDetails> {
                     child: Image.network(
                       widget.movie!.getPosterUrl,
                       errorBuilder: (context, exception, stackTrace) {
-                        return const Center(
-                            child: Text("No image avaliable..."));
+                        return const Image(image: AssetImage('poster_404.png'));
                       },
                     ),
                   ),

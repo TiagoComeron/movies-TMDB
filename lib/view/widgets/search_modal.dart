@@ -3,7 +3,17 @@ import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class SearchModal extends StatefulWidget {
   Function(List<dynamic> parameters) applyFilter;
-  SearchModal({Key? key, required this.applyFilter}) : super(key: key);
+  String searchText;
+  RangeValues currentRangeValues;
+  List<String> categoriesFilter = [];
+
+  SearchModal(
+      {Key? key,
+      required this.applyFilter,
+      required this.searchText,
+      required this.currentRangeValues,
+      required this.categoriesFilter})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SearchModalPage();
@@ -20,13 +30,6 @@ class Genre {
 }
 
 class _SearchModalPage extends State<SearchModal> {
-  String searchText = "";
-
-  RangeValues _currentRangeValues =
-      RangeValues(1850, double.parse(DateTime.now().year.toString()));
-
-  List<String> categoriesFilter = [];
-
   static List<String> genres = [
     "Action",
     "Animation",
@@ -68,7 +71,6 @@ class _SearchModalPage extends State<SearchModal> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Row(
-                  // ignore: prefer_const_literals_to_create_immutables
                   children: [
                     const Icon(
                       Icons.search,
@@ -80,12 +82,12 @@ class _SearchModalPage extends State<SearchModal> {
                         child: TextField(
                           onChanged: (text) {
                             setState(() {
-                              searchText = text;
+                              widget.searchText = text;
                             });
                             widget.applyFilter([
-                              searchText,
-                              _currentRangeValues,
-                              categoriesFilter
+                              widget.searchText,
+                              widget.currentRangeValues,
+                              widget.categoriesFilter
                             ]);
                           },
                           cursorColor: const Color.fromRGBO(49, 45, 84, 1),
@@ -107,20 +109,23 @@ class _SearchModalPage extends State<SearchModal> {
                 RangeSlider(
                   activeColor: const Color.fromRGBO(49, 45, 84, 1),
                   inactiveColor: const Color.fromARGB(118, 33, 30, 61),
-                  values: _currentRangeValues,
+                  values: widget.currentRangeValues,
                   max: double.parse(DateTime.now().year.toString()),
-                  min: 1850,
-                  divisions: DateTime.now().year - 1850,
+                  min: 1940,
+                  divisions: DateTime.now().year - 1940,
                   labels: RangeLabels(
-                    _currentRangeValues.start.round().toString(),
-                    _currentRangeValues.end.round().toString(),
+                    widget.currentRangeValues.start.round().toString(),
+                    widget.currentRangeValues.end.round().toString(),
                   ),
                   onChanged: (RangeValues values) {
                     setState(() {
-                      _currentRangeValues = values;
+                      widget.currentRangeValues = values;
                     });
-                    widget.applyFilter(
-                        [searchText, _currentRangeValues, categoriesFilter]);
+                    widget.applyFilter([
+                      widget.searchText,
+                      widget.currentRangeValues,
+                      widget.categoriesFilter
+                    ]);
                   },
                 ),
               ],
@@ -146,15 +151,17 @@ class _SearchModalPage extends State<SearchModal> {
               ),
               onConfirm: (categories) {
                 if (categories.isEmpty) {
-                  categoriesFilter = [];
+                  widget.categoriesFilter = [];
                 } else {
                   for (var category in categories) {
-                    // genresFilter.add(value)
-                    categoriesFilter.add(category.toString());
+                    widget.categoriesFilter.add(category.toString());
                   }
                 }
-                widget.applyFilter(
-                    [searchText, _currentRangeValues, categoriesFilter]);
+                widget.applyFilter([
+                  widget.searchText,
+                  widget.currentRangeValues,
+                  widget.categoriesFilter
+                ]);
               },
             ),
           ],

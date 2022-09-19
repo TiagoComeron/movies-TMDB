@@ -16,13 +16,16 @@ class DetailsPage extends StatefulWidget {
 class _DetailsPage extends State<DetailsPage> {
   DetailsController controller = DetailsController();
   bool loading = true;
+  bool loadingRelated = true;
 
   Movie? movie;
   List<Movie> relatedMovies = [];
 
   void getRelatedMovies(genres, id) async {
     relatedMovies = await controller.getRelatedMovies(genres, id);
-    setState(() {});
+    setState(() {
+      loadingRelated = false;
+    });
   }
 
   void getMovie() async {
@@ -62,7 +65,7 @@ class _DetailsPage extends State<DetailsPage> {
                     background: Image.network(
                       movie!.getBackdropUrl,
                       errorBuilder: (context, exception, stackTrace) {
-                        return Image.asset("imgs/transparent.png");
+                        return const Image(image: AssetImage('back_404.png'));
                       },
                       fit: BoxFit.fill,
                     ),
@@ -82,43 +85,50 @@ class _DetailsPage extends State<DetailsPage> {
                             "Related movies",
                             style: TextStyle(fontSize: 20),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              children: [
-                                SizedBox(
-                                  height: 400,
-                                  child: GridView.count(
-                                    crossAxisCount: 3,
-                                    mainAxisSpacing: 24,
-                                    crossAxisSpacing: 24,
-                                    childAspectRatio: 0.5,
-                                    children: relatedMovies
-                                        .map((Movie movie) => GestureDetector(
-                                            onTap: () => {
-                                                  Navigator.of(context).push(
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          DetailsPage(
-                                                              id: int.parse(movie
-                                                                  .id
-                                                                  .toString())),
-                                                    ),
-                                                  )
-                                                },
-                                            child: CardMovie(
-                                              title: movie.getTitle,
-                                              posterUrl: movie.getPosterUrl,
-                                              voteAverage: movie.getVoteAverage,
-                                              genres: movie.getGenres,
-                                              onlyTitle: true,
-                                            )))
-                                        .toList(),
+                          loadingRelated
+                              ? const Padding(
+                                  padding: EdgeInsets.only(top: 20.0),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                        height: 400,
+                                        child: GridView.count(
+                                          crossAxisCount: 3,
+                                          mainAxisSpacing: 24,
+                                          crossAxisSpacing: 24,
+                                          childAspectRatio: 0.5,
+                                          children: relatedMovies
+                                              .map((Movie movie) =>
+                                                  GestureDetector(
+                                                      onTap: () => {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .push(
+                                                              MaterialPageRoute(
+                                                                builder: (context) =>
+                                                                    DetailsPage(
+                                                                        id: int.parse(movie
+                                                                            .id
+                                                                            .toString())),
+                                                              ),
+                                                            )
+                                                          },
+                                                      child: CardMovie(
+                                                        movie: movie,
+                                                        onlyTitle: true,
+                                                      )))
+                                              .toList(),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
                         ],
                       )
                     ],

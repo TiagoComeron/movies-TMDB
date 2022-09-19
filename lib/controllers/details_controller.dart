@@ -10,14 +10,9 @@ class DetailsController {
           'https://desafio-mobile.nyc3.digitaloceanspaces.com/movies-v2/$id');
 
       movie = Movie().fromJSON(response.data);
-      // await Future.delayed(const Duration(seconds: 1));
-      return movie;
     } catch (e) {
-      print(e);
+      return movie;
     }
-    // final String response =
-    //     await rootBundle.loadString('assets/singleData.json');
-    // final data = await json.decode(response);
     return movie;
   }
 
@@ -45,9 +40,8 @@ class DetailsController {
         return false;
       }).toList();
     } catch (e) {
-      print(e);
+      return relatedMovies = [];
     }
-    // final String response = await rootBundle.loadString('assets/data.json');
 
     return relatedMovies;
   }

@@ -18,6 +18,13 @@ class _HomeStatePage extends State<HomePage> {
   List<Movie> movies = [];
   bool hasFilter = false;
 
+  String searchText = "";
+
+  RangeValues currentRangeValues =
+      RangeValues(1940, double.parse(DateTime.now().year.toString()));
+
+  List<String> categoriesFilter = [];
+
   void getMovies() async {
     movies = await controller.getMovies();
     setState(() {});
@@ -25,7 +32,16 @@ class _HomeStatePage extends State<HomePage> {
 
   applyFilter(List<dynamic> parameters) {
     setState(() {
-      hasFilter = true;
+      // searchText = parameters.first;
+      // currentRangeValues = parameters[1];
+      // categoriesFilter = parameters.last;
+      if (parameters.first.toString().isEmpty &&
+          parameters.last.isEmpty &&
+          parameters[1] == []) {
+        hasFilter = false;
+      } else {
+        hasFilter = true;
+      }
     });
     movies = controller.movieFilters(parameters);
     setState(() {});
@@ -58,7 +74,11 @@ class _HomeStatePage extends State<HomePage> {
                           child: Container(
                         padding: EdgeInsets.only(
                             bottom: MediaQuery.of(context).viewInsets.bottom),
-                        child: SearchModal(applyFilter: applyFilter),
+                        child: SearchModal(
+                            applyFilter: applyFilter,
+                            searchText: searchText,
+                            currentRangeValues: currentRangeValues,
+                            categoriesFilter: categoriesFilter),
                       ));
                     });
               },
@@ -73,7 +93,7 @@ class _HomeStatePage extends State<HomePage> {
                       onPressed: () {
                         applyFilter([
                           "",
-                          RangeValues(1850,
+                          RangeValues(1940,
                               double.parse(DateTime.now().year.toString())),
                           []
                         ]);
@@ -107,10 +127,7 @@ class _HomeStatePage extends State<HomePage> {
                           )
                         },
                     child: CardMovie(
-                      title: movie.getTitle,
-                      posterUrl: movie.getPosterUrl,
-                      voteAverage: movie.getVoteAverage,
-                      genres: movie.getGenres,
+                      movie: movie,
                       onlyTitle: false,
                     )))
                 .toList(),

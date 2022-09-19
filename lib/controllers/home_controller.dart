@@ -13,15 +13,16 @@ class HomeController {
         movies.add(Movie().fromJSON(item));
       }
     } catch (e) {
-      print(e);
+      return movies = [];
     }
-    // final String response = await rootBundle.loadString('assets/data.json');
 
     return movies;
   }
 
   List<Movie> movieFilters(List<dynamic> parameters) {
     List<Movie> newList = [];
+    int rangeStart = parameters[1]?.start.round();
+    int rangeEnd = parameters[1]?.end.round();
 
     newList = movies
         .where(
@@ -32,8 +33,8 @@ class HomeController {
                   .contains(parameters.first.toString().toLowerCase()),
         )
         .where((element) =>
-            parameters[1].start.round() <= element.getReleaseDate.year &&
-            element.getReleaseDate.year <= parameters[1].end.round())
+            rangeStart <= element.getReleaseDate.year &&
+            element.getReleaseDate.year <= rangeEnd)
         .where((element) {
       if (parameters.last.isEmpty) return true;
 
@@ -47,7 +48,6 @@ class HomeController {
       return false;
     }).toList();
 
-    print(parameters);
     return newList;
   }
 }
